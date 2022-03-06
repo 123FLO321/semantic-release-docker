@@ -22,7 +22,10 @@ test('steps::verify', async (t) => {
       , info: sinon.stub()
       }
     }
-    const config = await buildConfig(build_id, {}, context)
+    const config = await buildConfig(build_id, {
+      dockerRegistry: DOCKER_REGISTRY_HOST
+    }, context)
+
     await tt.rejects(
       verify(config, context)
     , {
@@ -45,8 +48,11 @@ test('steps::verify', async (t) => {
       , info: sinon.stub()
       }
     }
-    const config = await buildConfig(build_id, {}, context)
-    await tt.rejects(
+    const config = await buildConfig(build_id, {
+      dockerRegistry: DOCKER_REGISTRY_HOST
+    }, context)
+
+    tt.rejects(
       verify(config, context)
     , {
         message: /docker authentication failed/i
@@ -202,5 +208,28 @@ test('steps::verify', async (t) => {
     , details: /relative to pwd/gi
     })
 
+  })
+
+  t.test('verify command', async (tt) => {
+    const context = {
+      env: {
+        ...process.env
+      , DOCKER_REGISTRY_USER: 'iamweasel'
+      }
+    , cwd: process.cwd()
+    , logger: {
+        success: sinon.stub()
+      , info: sinon.stub()
+      , debug: sinon.stub()
+      }
+    }
+    const config = await buildConfig(build_id, {
+      dockerRegistry: DOCKER_REGISTRY_HOST
+    , dockerLogin: false
+    , dockerVerifyCmd: 'date'
+    }, context)
+
+    debugger;
+    await verify(config, context)
   })
 }).catch(threw)
